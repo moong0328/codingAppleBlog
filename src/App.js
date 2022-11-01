@@ -2,12 +2,18 @@
 import { useState } from 'react';
 import './App.css';
 
-function App() {
+const App = () => {
   // Destructuring 문법
   // useState: 자동 rerendering 됨.
   // 변경시 자동으로 html에 반영되게 만들고 싶을 때, 자주 변경이 될 것 같은 부분에 사용
   let [postTitle, setPostTitle] = useState(['남자 코트 추천', '강남 우동 맛집', '파이썬 독학']);
-  let [favCount, setFavCount] = useState(0);
+  let [favCount, setFavCount] = useState([0, 1, 2]);
+  let [modal, setModal] = useState(false);
+
+  // Array.map(() => {})
+  // 1. array 자료 갯수만큼 함수 안의 코드를 실행
+  // 2. 함수 내 파라미터는 array 안에 있는 Data
+  // 3. return에 뭐 적으면 array로 담아줌
 
   return (
     <div className="App">
@@ -32,24 +38,40 @@ function App() {
         copyTitle.sort()
         setPostTitle(copyTitle);
       }}>가나다순 정렬</button>
-      <div className="list">
-        {/* Data Binding */}
-        <h4>
-          { postTitle[0] } 
-          <span onClick={() => setFavCount(favCount++)}>👍</span> 
-          { favCount } 
-        </h4>
-        <p>2월 17일 발행</p>
-      </div>
-      <div className="list">
-        <h4>{ postTitle[1] }</h4>
-        <p>2월 17일 발행</p>
-      </div>
-      <div className="list">
-        <h4>{ postTitle[2] }</h4>
-        <p>2월 17일 발행</p>
-      </div>
-      <Modal />
+
+      {
+        postTitle.map((data, i) => {
+          return (
+            <div className="list" key={ i }>
+              <h4 onClick={() => setModal(!modal)}>
+                { i + 1 }. { data }
+                <span onClick={() => {
+                  let copyCountArray = [...favCount]
+                  copyCountArray[i] = copyCountArray[i] + 1
+                  setFavCount(copyCountArray)
+                }}>👍</span> 
+                { favCount[i] } 
+              </h4>
+              <p>2월 17일 발행</p>
+            </div>
+          )
+        })
+      }
+      {/* 
+        동적 UI Making 3 Step
+        1.html css 미리 디자인 완성
+        2. UI의 현재 상태를 state로 저장
+        3. state에 따라 UI가 어떻게 보일지 작성
+      */}
+      {
+        // 삼항연산자. 조건식 ? 참 : 거짓
+        modal ? <Modal postTitle={postTitle} titleChange={() => {
+          let copyTitle = postTitle; // Shallow Copy
+          copyTitle = [...postTitle]; // Deep Copy
+          copyTitle[0] = '여자 코트 추천';
+          setPostTitle(copyTitle);
+        }} /> : null
+      }
     </div>
   );
 }
@@ -59,14 +81,21 @@ function App() {
  * 1. 반복적인 html 축약할 때
  * 2. 큰 페이지
  * 3. 자주 변경되는 html UI */
-const Modal = () => {
+
+/* 부모 → 자식 State 전송은 props
+ * 1. <childComponent propsName={stateName}
+ * 2. props 파라미터 등록 후 props.propsName
+ * 자식 → 자식, 자식 → 부모는 안됨!
+*/
+const Modal = (props) => {
   return (
     // fragment
     <> 
-      <div className="modal">
-        <h4>제목</h4>
+      <div className="modal" style={{background : props.color}}>
+        <h4>{ props.postTitle }</h4>
         <p>날짜</p>
         <p>상세내용</p>
+        <button onClick={ props.titleChange }>글수정</button>
       </div>
     </>
   )
