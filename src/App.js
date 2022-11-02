@@ -1,4 +1,5 @@
 /* eslint-disable */
+import React from 'react'
 import { useState } from 'react';
 import './App.css';
 
@@ -9,7 +10,8 @@ const App = () => {
   let [postTitle, setPostTitle] = useState(['남자 코트 추천', '강남 우동 맛집', '파이썬 독학']);
   let [favCount, setFavCount] = useState([0, 1, 2]);
   let [modal, setModal] = useState(false);
-
+  let [modalTitle, setModalTitle] = useState(0);
+  let [inputValue, setInputValue] = useState(null);
   // Array.map(() => {})
   // 1. array 자료 갯수만큼 함수 안의 코드를 실행
   // 2. 함수 내 파라미터는 array 안에 있는 Data
@@ -43,29 +45,64 @@ const App = () => {
         postTitle.map((data, i) => {
           return (
             <div className="list" key={ i }>
-              <h4 onClick={() => setModal(!modal)}>
+              <h4 onClick={() => {
+                setModal(true);
+                setModalTitle(i);
+              }}>
                 { i + 1 }. { data }
-                <span onClick={() => {
-                  let copyCountArray = [...favCount]
-                  copyCountArray[i] = copyCountArray[i] + 1
-                  setFavCount(copyCountArray)
+                <span onClick={(e) => {
+                  e.stopPropagation();
+                  let copyCountArray = [...favCount];
+                  copyCountArray[i] = copyCountArray[i] + 1;
+                  setFavCount(copyCountArray);
                 }}>👍</span> 
-                { favCount[i] } 
+                { favCount[i] }
+                <button onClick={(e) => {
+                  e.stopPropagation();
+                  let copyTitle = [...postTitle];
+                  // let filterTitle = copyTitle.filter(item => item !== data);
+                  copyTitle.splice(i, 1)
+                  let copyFavCount = [...favCount];
+                  // let filterCount = copyFavCount.filter((item, index) => index !== i)
+                  copyFavCount.splice(i, 1)
+
+                  setPostTitle(copyTitle);
+                  setFavCount(copyFavCount);
+                }}>글 삭제</button>
               </h4>
               <p>2월 17일 발행</p>
             </div>
           )
         })
       }
+
+      <input onChange={(e) => {
+        setInputValue(e.target.value);
+        console.log(inputValue);
+      } } />
+
+      <button onClick={() => {
+        let copyTitle = [...postTitle]; // Deep Copy
+        copyTitle.unshift(inputValue);
+        let copyFavCount = [...favCount];
+        copyFavCount.unshift(0);
+
+        setPostTitle(copyTitle);
+        setFavCount(copyFavCount);
+      }}> 글 추가 </button>
+
       {/* 
         동적 UI Making 3 Step
         1.html css 미리 디자인 완성
         2. UI의 현재 상태를 state로 저장
         3. state에 따라 UI가 어떻게 보일지 작성
       */}
+      
+      <ModalClass></ModalClass>
+
       {
         // 삼항연산자. 조건식 ? 참 : 거짓
-        modal ? <Modal postTitle={postTitle} titleChange={() => {
+        modal ? <Modal postTitle={postTitle} modalTitle={modalTitle} titleChange={() => {
           let copyTitle = postTitle; // Shallow Copy
           copyTitle = [...postTitle]; // Deep Copy
           copyTitle[0] = '여자 코트 추천';
@@ -92,7 +129,7 @@ const Modal = (props) => {
     // fragment
     <> 
       <div className="modal" style={{background : props.color}}>
-        <h4>{ props.postTitle }</h4>
+        <h4>{ props.postTitle[props.modalTitle] }</h4>
         <p>날짜</p>
         <p>상세내용</p>
         <button onClick={ props.titleChange }>글수정</button>
@@ -103,5 +140,26 @@ const Modal = (props) => {
 /* Component 👎
  * 1. 반복적인 html 축약할 때
  * 2. 큰 페이지
- * 3. 자주 변경되는 html UI */
+ * 3. 자주 변경되는 html UI 
+*/
+
+class ModalClass extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      name : 'KIM',
+      age : 34
+    }
+  }
+  render() {
+    return (
+      <div>
+        하이요! { this.state.age } 
+        <button onClick={() => {
+          this.setState({age: 21})
+        }}>State Change</button>
+      </div>
+    )
+  }
+}
 export default App;
